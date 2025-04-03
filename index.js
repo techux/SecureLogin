@@ -4,7 +4,7 @@ const cors = require("cors");
 const dbConnect = require("./utils/dbConnect");
 
 const authRoute = require("./routes/auth.route");
-const otpRoute = require("./routes/otp.route");
+const userRoute = require("./routes/user.route");
 
 const PORT = process.env.PORT || 8080;
 
@@ -22,7 +22,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/auth", authRoute);
-app.use("/otp", otpRoute);
+app.use("/users", userRoute);
 
 app.listen(PORT, () => {
   console.log(`[INFO] Server is running on port ${PORT}`);

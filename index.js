@@ -3,6 +3,9 @@ require("dotenv").config();
 const cors = require("cors");
 const dbConnect = require("./utils/dbConnect");
 
+const authRoute = require("./routes/auth.route");
+const otpRoute = require("./routes/otp.route");
+
 const PORT = process.env.PORT || 8080;
 
 const app = express();
@@ -17,6 +20,9 @@ app.get("/", (req, res) => {
     message: "Hello from Server",
   });
 });
+
+app.use("/auth", authRoute);
+app.use("/otp", otpRoute);
 
 app.listen(PORT, () => {
   console.log(`[INFO] Server is running on port ${PORT}`);

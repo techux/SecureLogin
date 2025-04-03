@@ -4,11 +4,12 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { validate } = require("email-validator");
 const Otp = require("../models/otp.model");
+const sendEmail = require("../utils/sendmail");
 
 const loginController = async (req, res) => {
     try {        
-        const {email, password} = req.body ;
-        if (!email || !password) {
+        const {email, password, otp} = req.body ;
+        if (!email || !password || !otp) {
             return res.status(400).json({
                 status: "error",
                 message: "Please enter all fields"
@@ -30,6 +31,15 @@ const loginController = async (req, res) => {
             return res.status(400).json({
                 status: "error",
                 message: "Invalid login credentials"
+            })
+        }
+
+        const otpResult = await Otp.findOne({email, otp});
+
+        if (!otpResult){
+            return res.status(400).json({
+                status: "error",
+                message: "Email OTP Verfification failed"
             })
         }
 
@@ -63,9 +73,9 @@ const loginController = async (req, res) => {
 
 const registerController = async (req, res) => {
     try {
-        const {name, email, password, phone, otp} = req.body ;
+        const {name, email, password, phone} = req.body ;
 
-        if (!name || !email || !password || !phone || !otp) {
+        if (!name || !email || !password || !phone) {
             return res.status(400).json({
                 status:"error",
                 message: "Please fill all the fields"
@@ -86,21 +96,23 @@ const registerController = async (req, res) => {
                 message: "Email already exists"
             });
         }
-        
-        const otpResult = await Otp.findOne({email, otp}) ;
-        if(!otpResult) {
-            return res.status(400).json({
-                status:"error", 
-                message:"Invalid OTP"
-            }) ;
-        }
+
+        const otp = Math.floor(100000 + Math.random() * 900000);
+        const otpResult = await Otp.create({ email, otp })
+        const mailStatus = sendEmail(email, otp)
 
         const result = await User.create({name, email, password, phone}) ;
 
-        return res.status(200).json({
-            status: "ok",
-            message: "User registered successfull, You may login now",
-            userId: result._id
+        if (otpResult && mailStatus && result){
+            return res.status(201).json({
+                status:"ok",
+                message: "Registration Success, Please verify OTP send on Mail"
+            })
+        }
+
+        return res.status(500).json({
+            status: "error",
+            message: "Something went wrong, please try again",
         })
         
     } catch (error) {

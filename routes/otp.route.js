@@ -4,6 +4,7 @@ const { sendOtpController, verifyOtpController } = require("../controllers/otp.c
 const router = express.Router();
 
 router.post("/send", sendOtpController);
+router.post("/verify", verifyOtpController);
 
 
 module.exports = router;

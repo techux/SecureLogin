@@ -7,15 +7,6 @@ const sendOtpController = async (req, res) => {
         
         const { email } = req.body;
 
-        const user = await User.findOne({ email });
-
-        if (user) {
-            return res.status(404).json({
-                status: "error",
-                message: "User already registered..."
-            });
-        }
-
         const otp = Math.floor(100000 + Math.random() * 900000);
 
         const result = await Otp.create({
@@ -47,7 +38,34 @@ const sendOtpController = async (req, res) => {
     }
 }
 
+const verifyOtpController = async (req, res) => {
+    try {
+        const {email, otp} = req.body ;
+        const result = await Otp.findOne({email, otp}) ;
+        
+        if(result) {
+            await User.updateOne(
+                { email }, 
+                { $set: { isVerified: true } }
+              );            
+            return res.json({status:"ok", message:"OTP verified successfully"}) ;
+        }
+        return res.status(400).json({
+            status:"error", 
+            message:"Invalid OTP"
+        }) ;
+
+    } catch (error) {
+        console.log(`[ERROR] Error in verifyOtpController: ${error || error.message}`);
+        return res.status(500).json({
+            status:"error", 
+            message:"Unable to verify mail, please retry again"
+        })        
+    }
+}
+
 
 module.exports = {
     sendOtpController,
+    verifyOtpController
 }

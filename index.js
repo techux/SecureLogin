@@ -1,6 +1,7 @@
 const express = require("express");
 require("dotenv").config();
 const cors = require("cors");
+const dbConnect = require("./utils/dbConnect");
 
 const PORT = process.env.PORT || 8080;
 
@@ -19,4 +20,5 @@ app.get("/", (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`[INFO] Server is running on port ${PORT}`);
+  dbConnect();
 });
